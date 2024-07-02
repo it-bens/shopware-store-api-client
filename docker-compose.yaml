@@ -1,0 +1,14 @@
+services:
+  phpunit-tests:
+    build:
+      context: .
+      dockerfile: docker/test/phpunit-tests/Dockerfile
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ./:/var/www/html
+
+  e2e-test-shopware:
+    build:
+      context: .
+      dockerfile: docker/test/e2e-test-shopware/Dockerfile
