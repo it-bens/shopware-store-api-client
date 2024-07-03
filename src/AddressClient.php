@@ -14,7 +14,7 @@ use ITB\ShopwareStoreApiClient\Request\SearchCriteria;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 
-final readonly class AddressClient
+final readonly class AddressClient implements AddressClientInterface
 {
     public function __construct(
         private string $shopwareStoreUrl,

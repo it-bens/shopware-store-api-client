@@ -17,7 +17,7 @@ use ITB\ShopwareStoreApiClient\Request\SearchCriteria;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 
-final readonly class OrderClient
+final readonly class OrderClient implements OrderClientInterface
 {
     public function __construct(
         private string $shopwareStoreUrl,

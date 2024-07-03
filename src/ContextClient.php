@@ -12,7 +12,7 @@ use ITB\ShopwareStoreApiClient\Request\Context\ContextData;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 
-final readonly class ContextClient
+final readonly class ContextClient implements ContextClientInterface
 {
     public function __construct(
         private string $shopwareStoreUrl,

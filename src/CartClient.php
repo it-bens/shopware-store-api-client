@@ -12,7 +12,7 @@ use ITB\ShopwareStoreApiClient\Request\Cart\LineItem\LineItemCollection;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 
-final readonly class CartClient
+final readonly class CartClient implements CartClientInterface
 {
     public function __construct(
         private string $shopwareStoreUrl,
