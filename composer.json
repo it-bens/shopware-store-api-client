@@ -29,8 +29,7 @@
         "rector/rector": "^1.1",
         "symfony/http-client": "^7.1",
         "symplify/coding-standard": "^12.1",
-        "symplify/easy-coding-standard": "^12.3",
-        "vin-sw/shopware-sdk": "^2.0"
+        "symplify/easy-coding-standard": "^12.3"
     },
     "config": {
         "allow-plugins": {
@@ -52,7 +51,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ITB\\ShopwareStoreApiClient\\Tests\\E2E\\": "tests/E2E/"
+            "ITB\\ShopwareStoreApiClient\\Tests\\": "tests/"
         }
     },
     "extra": {
