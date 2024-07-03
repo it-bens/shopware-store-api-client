@@ -5,12 +5,15 @@ namespace ITB\ShopwareStoreApiClient\Tests\E2E;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use ITB\ShopwareStoreApiClient\AddressClient;
 use ITB\ShopwareStoreApiClient\Auth\ContextTokenProvider;
+use ITB\ShopwareStoreApiClient\ContextClient;
 use ITB\ShopwareStoreApiClient\Model\Cart\CustomerAddress;
 use ITB\ShopwareStoreApiClient\Model\Cart\CustomerAddressCollection;
 use ITB\ShopwareStoreApiClient\Request\Address\AddressData;
 use ITB\ShopwareStoreApiClient\Request\SearchCriteria;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateAddressClientHelper;
+use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateContextClientHelper;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateContextTokenProviderHelper;
+use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateNewCustomerAddressHelper;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateSerializerHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -26,7 +29,7 @@ final class AddressApiTest extends TestCase
         $this->resetShopware($_ENV['SHOPWARE_URL']);
     }
 
-    public static function createCustomerAddressProvider(): \Generator
+    public static function changeCustomerDefaultAddressProvider(): \Generator
     {
         $addressClient = CreateAddressClientHelper::createAddressClient($_ENV['SHOPWARE_URL'], $_ENV['SHOPWARE_STORE_ACCESS_TOKEN']);
         $contextTokenProvider = CreateContextTokenProviderHelper::createContextTokenProviderWithAuthenticatedUser(
@@ -35,22 +38,11 @@ final class AddressApiTest extends TestCase
             $_ENV['SHOPWARE_STORE_USER_EMAIL'],
             $_ENV['SHOPWARE_STORE_USER_PASSWORD']
         );
-        $serializer = CreateSerializerHelper::createSerializer();
-
-        $address = $addressClient->fetchCustomerAddresses(new SearchCriteria(), $contextTokenProvider, null);
-        $contextTokenProvider->resetContextToken();
-
-        /** @var string $countryId */
-        $countryId = $address->elements[0]->address->country?->id;
-        /** @var string $salutationId */
-        $salutationId = $address->elements[0]->address->salutation?->id;
-
-        $data = new AddressData(
-            null,
+        $data = CreateNewCustomerAddressHelper::createNewCustomerAddress(
+            $_ENV['SHOPWARE_URL'],
+            $_ENV['SHOPWARE_STORE_ACCESS_TOKEN'],
+            $contextTokenProvider,
             '39ab383c14d64b45acfdf3e694b7a656',
-            $countryId,
-            null,
-            $salutationId,
             null,
             'Homer',
             'Simpson',
@@ -63,13 +55,48 @@ final class AddressApiTest extends TestCase
             null,
             null,
         );
+
+        $contextClient = CreateContextClientHelper::createContextClient($_ENV['SHOPWARE_URL'], $_ENV['SHOPWARE_STORE_ACCESS_TOKEN']);
+
+        yield [$addressClient, $contextTokenProvider, $data, $contextClient];
+    }
+
+    public static function createCustomerAddressProvider(): \Generator
+    {
+        $addressClient = CreateAddressClientHelper::createAddressClient($_ENV['SHOPWARE_URL'], $_ENV['SHOPWARE_STORE_ACCESS_TOKEN']);
+        $contextTokenProvider = CreateContextTokenProviderHelper::createContextTokenProviderWithAuthenticatedUser(
+            $_ENV['SHOPWARE_URL'],
+            $_ENV['SHOPWARE_STORE_ACCESS_TOKEN'],
+            $_ENV['SHOPWARE_STORE_USER_EMAIL'],
+            $_ENV['SHOPWARE_STORE_USER_PASSWORD']
+        );
+        $serializer = CreateSerializerHelper::createSerializer();
+
+        $data = CreateNewCustomerAddressHelper::createNewCustomerAddress(
+            $_ENV['SHOPWARE_URL'],
+            $_ENV['SHOPWARE_STORE_ACCESS_TOKEN'],
+            $contextTokenProvider,
+            '39ab383c14d64b45acfdf3e694b7a656',
+            null,
+            'Homer',
+            'Simpson',
+            'Evergreen Terrace 742',
+            null,
+            'Springfield',
+            'The house without number',
+            null,
+            'Compu-Global-Hyper-Mega-Net',
+            null,
+            null,
+        );
+
+        $contextTokenProvider->resetContextToken();
+
         $expectedAddressData = [
-            'salutationId' => $salutationId,
             'firstName' => 'Homer',
             'lastName' => 'Simpson',
             'street' => 'Evergreen Terrace 742',
             'city' => 'Springfield',
-            'countryId' => $countryId,
             'company' => 'Compu-Global-Hyper-Mega-Net',
         ];
 
@@ -108,6 +135,32 @@ final class AddressApiTest extends TestCase
         ];
 
         yield [$addressClient, $criteria, $contextTokenProvider, $serializer, $expectedAddressesData];
+    }
+
+    #[DataProvider('changeCustomerDefaultAddressProvider')]
+    public function testChangeCustomerDefaultBillingAddress(
+        AddressClient $addressClient,
+        ContextTokenProvider $contextTokenProvider,
+        AddressData $newAddressData,
+        ContextClient $contextClient,
+    ): void {
+        $newAddress = $addressClient->createCustomerAddress($newAddressData, $contextTokenProvider, null);
+        $addressClient->changeCustomerDefaultBillingAddress($newAddress->address->id, $contextTokenProvider, null);
+        $context = $contextClient->fetchCurrentContext($contextTokenProvider, null);
+        $this->assertEquals($newAddress->address->id, $context->customer?->defaultBillingAddressId);
+    }
+
+    #[DataProvider('changeCustomerDefaultAddressProvider')]
+    public function testChangeCustomerDefaultShippingAddress(
+        AddressClient $addressClient,
+        ContextTokenProvider $contextTokenProvider,
+        AddressData $newAddressData,
+        ContextClient $contextClient,
+    ): void {
+        $newAddress = $addressClient->createCustomerAddress($newAddressData, $contextTokenProvider, null);
+        $addressClient->changeCustomerDefaultShippingAddress($newAddress->address->id, $contextTokenProvider, null);
+        $context = $contextClient->fetchCurrentContext($contextTokenProvider, null);
+        $this->assertEquals($newAddress->address->id, $context->customer?->defaultShippingAddressId);
     }
 
     /**

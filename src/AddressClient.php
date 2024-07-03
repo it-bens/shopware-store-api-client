@@ -45,8 +45,8 @@ final readonly class AddressClient
             throw new RequestExceptionWithHttpClientException($clientException, $request);
         }
 
-        if ($response->getStatusCode() !== 200) {
-            throw new RequestExceptionWithHttpStatusCode($response->getStatusCode(), 200, $request, $response->getBody());
+        if ($response->getStatusCode() !== 204) {
+            throw new RequestExceptionWithHttpStatusCode($response->getStatusCode(), 204, $request, $response->getBody());
         }
     }
 
@@ -70,8 +70,8 @@ final readonly class AddressClient
             throw new RequestExceptionWithHttpClientException($clientException, $request);
         }
 
-        if ($response->getStatusCode() !== 200) {
-            throw new RequestExceptionWithHttpStatusCode($response->getStatusCode(), 200, $request, $response->getBody());
+        if ($response->getStatusCode() !== 204) {
+            throw new RequestExceptionWithHttpStatusCode($response->getStatusCode(), 204, $request, $response->getBody());
         }
     }
 
