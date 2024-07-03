@@ -2,6 +2,7 @@
 
 namespace ITB\ShopwareStoreApiClient\Tests\E2E\Helper;
 
+use ITB\ShopwareStoreApiClient\ModelNormalizer\ContextSourceNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\CustomerAddressNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\DeliveryStateNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\OrderStateNormalizer;
@@ -42,6 +43,7 @@ final readonly class CreateSerializerHelper
         $orderStateNormalizer = new OrderStateNormalizer();
         $deliveryStateNormalizer = new DeliveryStateNormalizer();
         $transactionStateNormalizer = new TransactionStateNormalizer();
+        $contextSourceNormalizer = new ContextSourceNormalizer();
         $objectNormalizer = new ObjectNormalizer(
             classMetadataFactory: $classMetadataFactory,
             propertyAccessor: PropertyAccess::createPropertyAccessor(),
@@ -53,6 +55,7 @@ final readonly class CreateSerializerHelper
             $orderStateNormalizer,
             $deliveryStateNormalizer,
             $transactionStateNormalizer,
+            $contextSourceNormalizer,
             new BackedEnumNormalizer(),
             new ArrayDenormalizer(),
             $objectNormalizer,
