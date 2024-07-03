@@ -7,10 +7,13 @@ use ITB\ShopwareStoreApiClient\Auth\ContextTokenProvider;
 use ITB\ShopwareStoreApiClient\Exception\RequestExceptionWithHttpClientException;
 use ITB\ShopwareStoreApiClient\Exception\RequestExceptionWithHttpStatusCode;
 use ITB\ShopwareStoreApiClient\Language\LanguageIdProvider;
+use ITB\ShopwareStoreApiClient\Model\Cart\OrderCollection;
 use ITB\ShopwareStoreApiClient\Model\Order;
 use ITB\ShopwareStoreApiClient\Model\Order\OrderState;
+use ITB\ShopwareStoreApiClient\Request\Order\DefaultOrderAssociationsExtension;
 use ITB\ShopwareStoreApiClient\Request\Order\OrderMetadata;
 use ITB\ShopwareStoreApiClient\Request\Order\PaymentInitialization;
+use ITB\ShopwareStoreApiClient\Request\SearchCriteria;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 
@@ -71,6 +74,31 @@ final readonly class OrderClient
         }
 
         return $this->responseProcessor->processResponse(Order::class, $request, $response, 200);
+    }
+
+    public function fetchOrders(
+        SearchCriteria $criteria,
+        ContextTokenProvider $contextTokenProvider,
+        ?LanguageIdProvider $languageIdProvider
+    ): OrderCollection {
+        $criteria->addExtension(new DefaultOrderAssociationsExtension());
+
+        $request = $this->requestBuilder->buildRequest(
+            'POST',
+            $this->shopwareStoreUrl . '/store-api/order',
+            $criteria->toPayload(),
+            $this->accessTokenProvider,
+            $contextTokenProvider,
+            $languageIdProvider,
+        );
+
+        try {
+            $response = $this->httpClient->sendRequest($request);
+        } catch (ClientExceptionInterface $clientException) {
+            throw new RequestExceptionWithHttpClientException($clientException, $request);
+        }
+
+        return $this->responseProcessor->processResponse(OrderCollection::class, $request, $response, 200);
     }
 
     public function initializeOrderPayment(PaymentInitialization $data, ContextTokenProvider $contextTokenProvider): ?string

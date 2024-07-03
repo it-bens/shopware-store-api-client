@@ -5,6 +5,7 @@ namespace ITB\ShopwareStoreApiClient\Tests\E2E\Helper;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\ContextSourceNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\CustomerAddressNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\DeliveryStateNormalizer;
+use ITB\ShopwareStoreApiClient\ModelNormalizer\OrderCollectionNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\OrderStateNormalizer;
 use ITB\ShopwareStoreApiClient\ModelNormalizer\TransactionStateNormalizer;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -17,6 +18,7 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -44,6 +46,7 @@ final readonly class CreateSerializerHelper
         $deliveryStateNormalizer = new DeliveryStateNormalizer();
         $transactionStateNormalizer = new TransactionStateNormalizer();
         $contextSourceNormalizer = new ContextSourceNormalizer();
+        $orderCollectionNormalizer = new OrderCollectionNormalizer();
         $objectNormalizer = new ObjectNormalizer(
             classMetadataFactory: $classMetadataFactory,
             propertyAccessor: PropertyAccess::createPropertyAccessor(),
@@ -56,6 +59,8 @@ final readonly class CreateSerializerHelper
             $deliveryStateNormalizer,
             $transactionStateNormalizer,
             $contextSourceNormalizer,
+            $orderCollectionNormalizer,
+            new DateTimeNormalizer(),
             new BackedEnumNormalizer(),
             new ArrayDenormalizer(),
             $objectNormalizer,

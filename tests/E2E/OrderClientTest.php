@@ -6,6 +6,7 @@ use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use ITB\ShopwareStoreApiClient\Auth\ContextTokenProvider;
 use ITB\ShopwareStoreApiClient\CartClient;
 use ITB\ShopwareStoreApiClient\Exception\RequestExceptionWithHttpStatusCode;
+use ITB\ShopwareStoreApiClient\Model\Cart\OrderCollection;
 use ITB\ShopwareStoreApiClient\Model\Order;
 use ITB\ShopwareStoreApiClient\Model\Order\OrderState;
 use ITB\ShopwareStoreApiClient\OrderClient;
@@ -13,6 +14,7 @@ use ITB\ShopwareStoreApiClient\Request\Cart\LineItem\LineItemCollection;
 use ITB\ShopwareStoreApiClient\Request\Cart\LineItem\ProductLineItem;
 use ITB\ShopwareStoreApiClient\Request\Cart\LineItem\PromotionLineItem;
 use ITB\ShopwareStoreApiClient\Request\Order\OrderMetadata;
+use ITB\ShopwareStoreApiClient\Request\SearchCriteria;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateCartClientHelper;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateContextTokenProviderHelper;
 use ITB\ShopwareStoreApiClient\Tests\E2E\Helper\CreateOrderClientHelper;
@@ -172,6 +174,23 @@ final class OrderClientTest extends TestCase
         yield [$cartClient, $orderClient, $contextTokenProvider, $expectedErrors];
     }
 
+    public static function fetchOrdersProvider(): \Generator
+    {
+        $cartClient = CreateCartClientHelper::createCartClient($_ENV['SHOPWARE_URL'], $_ENV['SHOPWARE_STORE_ACCESS_TOKEN']);
+        $lineItemCollection = new LineItemCollection(new ProductLineItem(null, $_ENV['SHOPWARE_STORE_PRODUCT_ID_FOR_TEST'], 2));
+
+        $orderClient = CreateOrderClientHelper::createOrderClient($_ENV['SHOPWARE_URL'], $_ENV['SHOPWARE_STORE_ACCESS_TOKEN']);
+        $contextTokenProvider = CreateContextTokenProviderHelper::createContextTokenProviderWithAuthenticatedUser(
+            $_ENV['SHOPWARE_URL'],
+            $_ENV['SHOPWARE_STORE_ACCESS_TOKEN'],
+            $_ENV['SHOPWARE_STORE_USER_EMAIL'],
+            $_ENV['SHOPWARE_STORE_USER_PASSWORD']
+        );
+        $serializer = CreateSerializerHelper::createSerializer();
+
+        yield [$cartClient, $lineItemCollection, $orderClient, new SearchCriteria(), $contextTokenProvider, $serializer];
+    }
+
     #[DataProvider('cancelOrderProvider')]
     public function testCancelOrder(
         CartClient $cartClient,
@@ -235,5 +254,32 @@ final class OrderClientTest extends TestCase
 
             throw $requestExceptionWithHttpStatusCode;
         }
+    }
+
+    #[DataProvider('fetchOrdersProvider')]
+    public function testFetchOrders(
+        CartClient $cartClient,
+        LineItemCollection $lineItemCollection,
+        OrderClient $orderClient,
+        SearchCriteria $criteria,
+        ContextTokenProvider $contextTokenProvider,
+        Serializer $serializer,
+    ): void {
+        $cartClient->fetchOrCreateCart($contextTokenProvider, null);
+        $cartClient->addLineItemsToCart($lineItemCollection, $contextTokenProvider, null);
+
+        $order = $orderClient->createOrderFromCart(null, $contextTokenProvider, null);
+        $expectedOrdersData = [
+            'elements' => [$serializer->normalize($order)],
+        ];
+
+        $orders = $orderClient->fetchOrders($criteria, $contextTokenProvider, null);
+        $this->assertInstanceOf(OrderCollection::class, $orders);
+        $this->assertCount(count($expectedOrdersData), $orders->elements);
+
+        /** @var array{elements: array{billingAddress: array<string, mixed>}} $ordersData */
+        $ordersData = $serializer->normalize($orders);
+        $ordersData['elements'][0]['billingAddress'] = null;
+        $this->assertArraySubset($expectedOrdersData, $ordersData);
     }
 }

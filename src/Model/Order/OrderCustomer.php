@@ -12,7 +12,7 @@ final readonly class OrderCustomer
     public function __construct(
         public string $id,
         public string $email,
-        public Salutation $salutation,
+        public ?Salutation $salutation,
         public ?string $title,
         public string $firstName,
         public string $lastName,
