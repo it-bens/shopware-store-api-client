@@ -130,8 +130,8 @@ final class ContextApiTest extends TestCase
         $contextClient->updateCurrentContext($contextData, $contextTokenProvider, null);
         $context = $contextClient->fetchCurrentContext($contextTokenProvider, null);
         $this->assertInstanceOf(Context::class, $context);
-        $this->assertEquals($newAddress->address->id, $context->customer?->activeBillingAddress?->address->id);
-        $this->assertEquals($newAddress->address->id, $context->customer?->activeShippingAddress?->address->id);
+        $this->assertSame($newAddress->address->id, $context->customer?->activeBillingAddress?->address->id);
+        $this->assertSame($newAddress->address->id, $context->customer?->activeShippingAddress?->address->id);
     }
 
     public static function updateCurrentContextProvider(): \Generator

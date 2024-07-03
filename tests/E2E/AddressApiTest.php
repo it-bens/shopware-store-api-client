@@ -147,7 +147,7 @@ final class AddressApiTest extends TestCase
         $newAddress = $addressClient->createCustomerAddress($newAddressData, $contextTokenProvider, null);
         $addressClient->changeCustomerDefaultBillingAddress($newAddress->address->id, $contextTokenProvider, null);
         $context = $contextClient->fetchCurrentContext($contextTokenProvider, null);
-        $this->assertEquals($newAddress->address->id, $context->customer?->defaultBillingAddressId);
+        $this->assertSame($newAddress->address->id, $context->customer?->defaultBillingAddressId);
     }
 
     #[DataProvider('changeCustomerDefaultAddressProvider')]
@@ -160,7 +160,7 @@ final class AddressApiTest extends TestCase
         $newAddress = $addressClient->createCustomerAddress($newAddressData, $contextTokenProvider, null);
         $addressClient->changeCustomerDefaultShippingAddress($newAddress->address->id, $contextTokenProvider, null);
         $context = $contextClient->fetchCurrentContext($contextTokenProvider, null);
-        $this->assertEquals($newAddress->address->id, $context->customer?->defaultShippingAddressId);
+        $this->assertSame($newAddress->address->id, $context->customer?->defaultShippingAddressId);
     }
 
     /**

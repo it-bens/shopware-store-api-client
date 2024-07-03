@@ -24,12 +24,12 @@ final readonly class RequestBuilder implements RequestBuilderInterface
         ];
         $headers = $accessTokenProvider->provideAccessToken()
             ->addToHeaders($headers);
-        if ($contextTokenProvider instanceof \ITB\ShopwareStoreApiClient\Auth\ContextTokenProvider) {
+        if ($contextTokenProvider instanceof ContextTokenProvider) {
             $headers = $contextTokenProvider->provideContextToken()
                 ->addToHeaders($headers);
         }
 
-        if ($languageIdProvider instanceof \ITB\ShopwareStoreApiClient\Language\LanguageIdProvider) {
+        if ($languageIdProvider instanceof LanguageIdProvider) {
             $headers = $languageIdProvider->provideLanguageId()
                 ->addToHeaders($headers);
         }
